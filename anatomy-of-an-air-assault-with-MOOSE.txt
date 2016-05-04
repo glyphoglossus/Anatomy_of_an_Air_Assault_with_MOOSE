@@ -1,0 +1,122 @@
+Mission development in MOOSE is very different than any other way. Most of the groups and units that you place on the map using the Mission Editor will not be used directly. Rather they will serve as *templates* to spawn new groups and units by the MOOSE library. In same cases the groups you create will not ever result in a group being spawned, but the routes that you assign them will be used as templates to create routes on-the-fly for other groups. Once you get used to the concept, you will recognize the incredible power and flexibility this gives you, as not only can you create many similar groups using MOOSE from a single Mission Editor-placed item, but the MOOSE-created groups are fantastically rich in what you can do with them, changing their routes, tasks, movements, and actions on the fly in response to many things from other groups/units are doing, or player-issued radio instructions, or just about anything in else going on in the simulation (e.g., presence/location/activity/numbers/status of various elements on the map).
+
+## Initialization and Setup
+
+The MOOSE library needs to be loaded into the mission before anything else is done.
+
+1.  Download the MOOSE library from:
+
+    https://github.com/FlightControl-Master/MOOSE.git
+
+    and save it somewhere on your filesystem. It does not really matter where, just as long as you know how to get to it from the DCS World Mission editor file browser later on.
+    I typically save it in "Documents/Projects/MOOSE" on my deployment machine, but you can also save it in "Saved Games/DCS/Scripts/MOOSE", for example.
+    Let us call this location, "MOOSE_HOME".
+
+2.  Open a new, empty mission in the Mission Editor.
+    Create the following trigger to load MOOSE:
+
+    ~~~
+    +------------------+--------------------+--------------------------------------------+
+    | TRIGGER          | CONDITION          | ACTION                                     |
+    +------------------+--------------------+--------------------------------------------+
+    | TYPE: ONCE       | 1. TYPE: TIME MORE | 1. DO SCRIPT FILE: Moose_Load_Embedded.lua |
+    | NAME: LOAD MOOSE | ...SECONDS: 1      | 2. DO SCRIPT FILE: Moose_Embedded.lua      |
+    | EVENT: NO EVENT  |                    |                                            |
+    +------------------+--------------------+--------------------------------------------+
+    ~~~
+
+    Both the above script files, "Moose_Load_Embedded.lua" and "Moose_Embedded.lua" are can be found in the MOOSE distribution:
+
+        -   "MOOSE/Loaders/Moose_Load_Embedded.lua"
+        -   "MOOSE/Embedded/Moose_Embedded.lua"
+
+## Creation of Group Unit/Templates
+
+### Gunship Template: LZ Prep Mission
+
+A section of two gunships, callsign "Croc-1", are tasked with prepping the LZ by suppressing or otherwise destroying threats to the main air assault force at the LZ.
+This is the simplest element to create.
+So simple, in fact, that we really will not be using any of major advantages or power of the MOOSE library, and, as such, we could just create it directly in the Mission Editor in traditional style.
+In fact, we will do just that, at first.
+But then we will go on and make it a MOOSE element and use MOOSE to spawn the group.
+This is so that we have the option of introducing additional complexity through the MOOSE library later on if we want to enhance the mission, and also just to demonstrate the basics of spawning a group using MOOSE.
+
+1.  Create a group with the name "Croc1_Template" consisting of 2 suitable armed UH-1H Huey's.
+2.  Give them a route that takes them up to the LZ and then back to base. Give them a "home" altitude of 800 ft AGL (for deconfliction with other groups).
+3.  At a waypoint close to the LZ, create the waypoint actions that get the gunships to engage the enemy.
+
+    One example is:
+
+    ~~~
+    +--------------+--------------+--------------------------+
+    | TYPE         | ACTION       | GROUP                    |
+    +--------------+--------------+--------------------------+
+    | Perform Task | Attack Group | Insurgents, Bridge, East |
+    +--------------+--------------+--------------------------+
+    | Perform Task | Attack Group | Insurgents, Bridge, West |
+    +--------------+--------------+--------------------------+
+    ~~~
+
+    NOTE: You may get a better response by creating other types of waypoint actions available to you from within the Mission Editor (such as attack group in zone, etc.). For example, you could also use an "Start Enroute Task", to "Search then Engage in Zone", and setting the zone to cover the LZ. Furthermore, the MOOSE library gives you an incredibly rich number of ways to fine-tune and customize and generally make "smarter" the gunship's actions.
+
+4.  Here is where we make the group MOOSE-able: check the box labeled "LATE ACTIVATION".
+    This will prevent for the group from automatically spawning. In the mission script that we shall create below and then load in this mission, we will provide code that will actually spawn a new group based on this "Croc1_Template" template, and this is what will bring this gunship mission to life. As noted, for this particular mission, MOOSE adds complexity without any benefit. But, apart from providing a simple example on how to create a group with MOOSE, as we shall see later this small increase in complexity (checking the "late activation" box and then adding script lines to spawn the group) give us a lot of room for some incredible complex and interesting behavior and actions to be added in the future.
+
+
+## The Mission Script
+
+The mission script is where all the action takes place: groups and units are born, live, and die here.
+All our work in the Mission Editor was simply to define the basic playing pieces; not even to create those pieces, just *define* them.
+We will bring them to life and give them purpose and meaning and activity in the mission script.
+
+The steps are:
+
+(1) Write the script and save it somewhere.
+(2) go back to the mission in the Mission Editor and create a trigger that loads the script (you can also just add a new action to the "Load MOOSE" trigger that loads the script.
+
+### Writing the Script
+
+Here, we will write our script using a simple text editor.
+No, not the crap toy that is "Notepad", but a *real* text editor, like NotePad++ or (recommended) SublimeText 3.
+Well, you can probably get away with Notepad, but I refuse to suggest it out of principle.
+It really is an unfunny joke.
+While you can get away for this tutorial with writing the script in a text editor (as I will be providing you all the code), chances are you will want something a little more heavy-weight if you are going to be developing missions or campaigns with MOOSE in the future.
+In particular, you want something that will provide code completion and "intellisense" hints for you, as well as easy look-up of documentation.
+FlightControl has some great videos that describe how to go about setting things up.
+
+I am going to describe the script in sections, relating them to the group/units that we created above.
+In each section, there will be a bit of code, and the final mission script will be just that code strung together and saved in a file, "air_assault.lua".
+
+#### LZ Prep Mission, "Croc-1"
+
+We bring this unit to life with the following code:
+
+~~~
+Croc1_Spawner = SPAWN:New("Croc1_Template")
+Croc1 = Croc1_Spawner:Spawn()
+~~~
+
+The first line creates what is sometimes known as a "factory object": it is an object that serves to create other objects.
+In this case, the objects that it creates corresponds to groups in the DCS world based on the (i.e., clones of) the group we created in the Mission Editor called "Croc1_Template".
+
+NOTE: The group object so created is a *MOOSE* group object, which is not the same as a DCS group object, but rather a higher-level object that contains the DCS group object while adding a lot of functionality.
+That is, the group is an object of class "GROUP", which is a class that "wraps" the native DCS object of class "Group".
+Given any MOOSE object of class "GROUP", the contained DCS object of class "Group" is accessible through the attribute "DCSGroup".
+If none of this makes sense, do not worry about it for now!
+
+The second line uses the factory object "Croc1_Spawner", and, by invoking its "Spawn()" method, actually creates and inserts the group in the 3D world.
+As this is one of our simplest elements, with all the behavior embedded in the waypoints of the template, this is all the code we need!
+
+### Loading the Mission Script
+
+Load the mission script into the mission involves creating the following trigger:
+
+    ~~~
+    +--------------------+--------------------+------------------------------------------+
+    | TRIGGER            | CONDITION          | ACTION                                   |
+    +--------------------+--------------------+------------------------------------------+
+    | TYPE: ONCE         | 1. TYPE: TIME MORE | 1. DO SCRIPT FILE: air_assault_moose.lua |
+    | NAME: LOAD MISSION | ...SECONDS: 2      |                                          |
+    | EVENT: NO EVENT    |                    |                                          |
+    +--------------------+--------------------+------------------------------------------+
+    ~~~
