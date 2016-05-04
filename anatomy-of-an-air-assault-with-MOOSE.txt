@@ -60,8 +60,15 @@ This is so that we have the option of introducing additional complexity through 
     NOTE: You may get a better response by creating other types of waypoint actions available to you from within the Mission Editor (such as attack group in zone, etc.). For example, you could also use an "Start Enroute Task", to "Search then Engage in Zone", and setting the zone to cover the LZ. Furthermore, the MOOSE library gives you an incredibly rich number of ways to fine-tune and customize and generally make "smarter" the gunship's actions.
 
 4.  Here is where we make the group MOOSE-able: check the box labeled "LATE ACTIVATION".
-    This will prevent for the group from automatically spawning. In the mission script that we shall create below and then load in this mission, we will provide code that will actually spawn a new group based on this "Croc1_Template" template, and this is what will bring this gunship mission to life. As noted, for this particular mission, MOOSE adds complexity without any benefit. But, apart from providing a simple example on how to create a group with MOOSE, as we shall see later this small increase in complexity (checking the "late activation" box and then adding script lines to spawn the group) give us a lot of room for some incredible complex and interesting behavior and actions to be added in the future.
-
+    This will prevent for the group from automatically spawning.
+    In the mission script that we shall create below and then load in this mission, we will provide code that will actually spawn a new group based on this "Croc1_Template" template, and this is what will bring this gunship mission to life.
+    As noted, for this particular group and this particular mission, the way we have done it here, MOOSE adds complexity without any benefit.
+    But, apart from providing a simple example on how to create a group with MOOSE, as we shall see later this small increase in complexity (checking the "late activation" box and then adding script lines to spawn the group) give us a lot of room for some incredible complex and interesting behavior and actions to be added in the future.
+    In fact, if we wanted, we could actually create the entire route we did above using scripts that rely on MOOSE, rather than the Mission Editor.
+    This has huge advantageous over working with the Mission Editor.
+    Everything is clearly evident in the script, where the Mission Editor needs you to click on each waypoint to reveal advanced waypoint actions, altitude, and other parameters.
+    Editing the route is also so much more easier and less prone in the form a script: you can, e.g., easily globally search-and-replace when you want to update the "home" altitude, as opposed to having to click through each waypoint.
+    The script can also be saved in a version control system, allowing you to easily go back to older versions if you want.
 
 ## The Mission Script
 
@@ -111,12 +118,12 @@ As this is one of our simplest elements, with all the behavior embedded in the w
 
 Load the mission script into the mission involves creating the following trigger:
 
-    ~~~
-    +--------------------+--------------------+------------------------------------------+
-    | TRIGGER            | CONDITION          | ACTION                                   |
-    +--------------------+--------------------+------------------------------------------+
-    | TYPE: ONCE         | 1. TYPE: TIME MORE | 1. DO SCRIPT FILE: air_assault_moose.lua |
-    | NAME: LOAD MISSION | ...SECONDS: 2      |                                          |
-    | EVENT: NO EVENT    |                    |                                          |
-    +--------------------+--------------------+------------------------------------------+
-    ~~~
+~~~
++--------------------+--------------------+------------------------------------------+
+| TRIGGER            | CONDITION          | ACTION                                   |
++--------------------+--------------------+------------------------------------------+
+| TYPE: ONCE         | 1. TYPE: TIME MORE | 1. DO SCRIPT FILE: air_assault_moose.lua |
+| NAME: LOAD MISSION | ...SECONDS: 2      |                                          |
+| EVENT: NO EVENT    |                    |                                          |
++--------------------+--------------------+------------------------------------------+
+~~~
